@@ -9,19 +9,38 @@
       font-family: 'Helvetica Neue', 'Arial', sans-serif;
       color: #111;
       background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
     .container {
-      left: 2em;
-      top: 2em;
-      width: 300px;
+      display: flex;
+      width: 600px;
       height: 300px;
-      color: #111;
       z-index: 1;
       border-radius: 10px;
       background-color: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(10px);
       padding: 1em;
+      overflow: hidden;
+    }
+    .stories {
+      flex: 1;
       overflow-y: auto;
+    }
+    .image-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 300px;
+      height: 300px;
+    }
+    .image-container img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 10px;
     }
     .story-item {
       margin-bottom: 1.5em;
@@ -56,27 +75,30 @@
 </head>
 <body>
   <div class="container">
-    <ul id="top-stories-list"></ul>
+    <div class="stories">
+      <ul id="top-stories-list"></ul>
+    </div>
+    <div class="image-container">
+      <img src="https://github.com/MarzGoldman/sumbuz.com/bunny.png" alt="Image">
+    </div>
   </div>
   <script>
-    const PROXY = 'http://127.0.0.1:41417/';
-
     async function api(query) {
-      return await fetch(new URL(\`\${PROXY}https://hacker-news.firebaseio.com/v0/\${query}\`));
+      return await fetch(`https://hacker-news.firebaseio.com/v0/${query}`);
     }
 
     async function fetchTopStories() {
       try {
         const response = await api('topstories.json');
         if (!response.ok) {
-          throw new Error(\`\${response.status} \${response.statusText}\`);
+          throw new Error(`${response.status} ${response.statusText}`);
         }
         const storyIds = await response.json();
         const data = await Promise.all(
           storyIds.slice(0, 50).map(async id => {
-            const itemResponse = await api(\`item/\${id}.json\`);
+            const itemResponse = await api(`item/${id}.json`);
             if (!itemResponse.ok) {
-              throw new Error(\`\${itemResponse.status} \${itemResponse.statusText}\`);
+              throw new Error(`${itemResponse.status} ${itemResponse.statusText}`);
             }
             return await itemResponse.json();
           })
