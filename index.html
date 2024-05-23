@@ -1,1 +1,109 @@
-<h1>hi</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hacker News Top Stories</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', 'Arial', sans-serif;
+      color: #111;
+      background-color: #000;
+    }
+    .container {
+      left: 2em;
+      top: 2em;
+      width: 300px;
+      height: 300px;
+      color: #111;
+      z-index: 1;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 1em;
+      overflow-y: auto;
+    }
+    .story-item {
+      margin-bottom: 1.5em;
+    }
+    .story-title {
+      font-size: 1em;
+      margin: 0 0 0.2em 0;
+      font-weight: normal;
+      color: #ffffff;
+    }
+    .story-link {
+      font-size: 0.8em;
+      color: #fedd6e;
+      text-decoration: none;
+    }
+    .story-link:hover {
+      text-decoration: underline;
+    }
+    .discuss-link {
+      font-size: 0.8em;
+      color: #555;
+      margin-left: 0.5em;
+      text-decoration: none;
+    }
+    .discuss-link:hover {
+      text-decoration: underline;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <ul id="top-stories-list"></ul>
+  </div>
+  <script>
+    const PROXY = 'http://127.0.0.1:41417/';
+
+    async function api(query) {
+      return await fetch(new URL(\`\${PROXY}https://hacker-news.firebaseio.com/v0/\${query}\`));
+    }
+
+    async function fetchTopStories() {
+      try {
+        const response = await api('topstories.json');
+        if (!response.ok) {
+          throw new Error(\`\${response.status} \${response.statusText}\`);
+        }
+        const storyIds = await response.json();
+        const data = await Promise.all(
+          storyIds.slice(0, 50).map(async id => {
+            const itemResponse = await api(\`item/\${id}.json\`);
+            if (!itemResponse.ok) {
+              throw new Error(\`\${itemResponse.status} \${itemResponse.statusText}\`);
+            }
+            return await itemResponse.json();
+          })
+        );
+        renderTopStories(data);
+      } catch (error) {
+        renderError(error.message);
+      }
+    }
+
+    function renderTopStories(data) {
+      const topStoriesList = document.getElementById('top-stories-list');
+      topStoriesList.innerHTML = data.map(item => `
+        <li class="story-item">
+          <h3 class="story-title">${item.title}</h3>
+          ${item.url ? `<a class="story-link" href="${item.url}">${new URL(item.url).hostname.replace('www.', '')}</a>` : ''}
+          <a class="discuss-link" href="https://news.ycombinator.com/item?id=${item.id}">discuss</a>
+        </li>
+      `).join('');
+    }
+
+    function renderError(error) {
+      const topStoriesList = document.getElementById('top-stories-list');
+      topStoriesList.innerHTML = `<div class="error">Error loading stories: ${error}</div>`;
+    }
+
+    fetchTopStories();
+  </script>
+</body>
+</html>
