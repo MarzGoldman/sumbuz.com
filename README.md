@@ -1,2 +1,2 @@
-# project-sumbuz
+# SumBuz.com
 An Information Aggregator 
