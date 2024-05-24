@@ -1,9 +1,13 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+    output: "export",  // <=== enables static exports
+    reactStrictMode: true,
+  };
+  
+  module.exports = nextConfig;
 
 export default {
     output: 'export',
-    basePath: 'https://github.com/MarzGoldman/sumbuz.com.git',
-    assetPrefix: 'https://github.com/MarzGoldman/sumbuz.com.git',
   }
   
+
